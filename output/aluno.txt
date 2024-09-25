@@ -1,0 +1,9 @@
+8
+234 3 AMS 25 Yusuke Urameshi
+976 3 ADS 24 Phineas Flynn
+723 3 ADS 23 Jimmy Neutron 
+634 3 CEX 23 Ben Tennyson
+349 3 DSM 22 Timmy Turner
+783 3 EMP 23 Dexter McPherson
+938 3 LOG 23 Light Yagami
+267 3 POL 23 Johnny Test

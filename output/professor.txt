@@ -1,0 +1,9 @@
+8
+567 ADS 60 Prof. Girassol
+734 ADS 45 Prof. Xavier
+123 AMS 35 Prof. Abobrinha
+480 CEX 61 Prof. Paradoxo
+381 DSM 30 Prof. Utônio 
+678 EMP 42 Prof. Carvalho
+780 LOG 50 Prof. Dingle Dong
+900 POL 38 Prof. Snape
