@@ -5,24 +5,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 
-#ifdef _WIN32
-    #include <windows.h>
-    #include <conio.h>
-    #define kbhit() _kbhit()
-    #define noBlockInput() _setmode(_fileno(stdin), _O_BINARY)
-#else
-    #include <unistd.h>
-    #include <termios.h>
-    void noBlockInputUnix() {
-        struct termios oldt, newt;
-        tcgetattr(STDIN_FILENO, &oldt);
-        newt = oldt;
-        newt.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    }
-    #define noBlockInput() noBlockInputUnix()
-#endif
-
 #define max 50
 #define maxNome 60
 #define maxSigla 10
@@ -313,111 +295,33 @@ void gerarResultado(){
     } fclose(arq);
 }
 
-// config data input
-#ifdef _WIN32
-    int kbhit(){
-        return _kbhit();
-    }
-#else
-    int kbhit() {
-        struct termios oldt, newt;
-        int ch;
-        int oldf;
-
-        tcgetattr(STDIN_FILENO, &oldt);
-        newt = oldt;
-        newt.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-        oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-        fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-
-        ch = getchar();
-
-        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-        fcntl(STDIN_FILENO, F_SETFL, oldf);
-
-        if (ch != EOF) {
-            ungetc(ch, stdin);
-            return 1;
-        }
-
-        return 0;
-    }
-#endif
-
-void restoreInput(){
-    #ifdef _WIN32
-        _setmode(_fileno(stdin), _O_TEXT);
-    #else
-        struct termios oldt;
-        tcgetattr(STDIN_FILENO, &oldt);
-        oldt.c_lflag |= (ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    #endif
-}
-
-
 char msg[100] = "";
-char MENU1() {
-    char star1='*', star2='.';
-    char opcao;
-    noBlockInput();
-    while (1) {
-        printf("\033[H\033[J");
-        printf("+---------------------------------------+\n");
-        printf("|                Melhor PI              |\n");
-        printf("|           %c MENU PRINCIPAL %c          |\n", star1, star2);
-        printf("+---------------------------------------+\n");
-        printf("| a) Iniciar nova votação               |\n");
-        printf("| b) Continuar votação                  |\n");
-        printf("| c) Sair                               |\n");
-        printf("+---------------------------------------+\n");
-        if(strlen(msg)>0){
-            printf("| %s", msg);
-            printf("+---------------------------------------+\n");
-        } usleep(500000);
-        if(star1=='*'){
-            star1='.';
-            star2='*';
-        } else{
-            star1='*';
-            star2='.';
-        }
-        if(kbhit()){
-            scanf(" %c", &opcao);
-            restoreInput();
-            return opcao; }
+char MENU1(){
+    printf("\033[H\033[J");
+    printf("+---------------------------------------+\n");
+    printf("|                Melhor PI              |\n");
+    printf("|             MENU PRINCIPAL            |\n");
+    printf("+---------------------------------------+\n");
+    printf("| a) Iniciar nova votação               |\n");
+    printf("| b) Continuar votação                  |\n");
+    printf("| c) Sair                               |\n");
+    printf("+---------------------------------------+\n");
+    if(strlen(msg)>0){
+        printf(" %s", msg);
     }
 }
 char MENU2(){
-    char star1='*', star2='.';
-    char opcao;
-    noBlockInput();
-    while (1) {
-        printf("\033[H\033[J");
-        printf("+---------------------------------------+\n");
-        printf("|                Melhor PI              |\n");
-        printf("|            %c MENU VOTACAO %c           |\n", star1, star2);
-        printf("+---------------------------------------+\n");
-        printf("| a) Entrar com voto                    |\n");
-        printf("| b) Suspender votacao                  |\n");
-        printf("| c) Concluir votacao                   |\n");
-        printf("+---------------------------------------+\n");
-        if(strlen(msg)>0){
-            printf("| %s", msg);
-            printf("+---------------------------------------+\n");
-        } usleep(500000);
-        if(star1=='*'){
-            star1='.';
-            star2='*';
-        } else {
-            star1='*';
-            star2='.';
-        }
-        if(kbhit()){
-            scanf(" %c", &opcao);
-            restoreInput(); 
-            return opcao; }
+    printf("\033[H\033[J");
+    printf("+---------------------------------------+\n");
+    printf("|                Melhor PI              |\n");
+    printf("|               MENU VOTACAO            |\n");
+    printf("+---------------------------------------+\n");
+    printf("| a) Entrar com voto                    |\n");
+    printf("| b) Suspender votacao                  |\n");
+    printf("| c) Concluir votacao                   |\n");
+    printf("+---------------------------------------+\n");
+    if(strlen(msg)>0){
+        printf(" %s", msg);
     }
 }
 
@@ -427,7 +331,8 @@ int main(){
     char cpf[15];
     int codigoTG;
     do{
-        opcao=MENU1();
+       MENU1();
+       scanf(" %c", &opcao);
         switch(opcao){
             case 'A':
             case 'a':
@@ -442,7 +347,8 @@ int main(){
                 lerTGs("tg_POL.txt");
                 lerComissao();
                 do {
-                    opcaoVotar=MENU2();
+                    MENU2();
+                    scanf(" %c", &opcaoVotar);
                     switch(opcaoVotar){
                         case 'A':
                         case 'a':
@@ -454,7 +360,7 @@ int main(){
                                     if (strcmp(comissao[i].cpf,cpf)==0){
                                         eleitorEncontrado=true;
                                             if(comissao[i].votou){
-                                                strcpy(msg, "Este eleitor ja votou.                |\n");
+                                                strcpy(msg, "Este eleitor ja votou.\n");
                                                 break;
                                             }
                                             printf("Digite o codigo do TG: ");
@@ -465,13 +371,13 @@ int main(){
                                                     comissao[i].codigoTG=codigoTG;
                                                     listaTGs[j].qtdeVotos++;
                                                     comissao[i].votou=true;
-                                                    strcpy(msg, "Voto registrado com sucesso.          |\n");
+                                                    strcpy(msg, "Voto registrado com sucesso.\n");
                                                     tgEncontrado=true;
                                                     break;
                                                 }
                                             }
                                             if(!tgEncontrado){
-                                                strcpy(msg, "TG nao encontrado. Tente novamente.   |\n");
+                                                strcpy(msg, "TG nao encontrado. Tente novamente.\n");
                                             }
                                             break; 
                                     }
@@ -480,17 +386,17 @@ int main(){
                                     strcpy(msg, "Eleitor nao encontrado.\n");
                                 }
                         } else{
-                            sprintf(msg, "CPF %s invalido.          |\n", cpf);
+                            sprintf(msg, "CPF %s invalido.\n", cpf);
                         }
                         break;
                         case 'B':
                         case 'b':
-                            strcpy(msg, "Votacao suspensa. Voto salvo!         |\n");
+                            strcpy(msg, "Votacao suspensa. Voto salvo!\n");
                             salvarVotos();
                             break;
                         case 'C':
                         case 'c':
-                            strcpy(msg, "Votacao concluida.                    |\n");
+                            strcpy(msg, "Votacao concluida.\n");
                             gerarResultado();
                             break;
                     }
@@ -499,9 +405,10 @@ int main(){
             case 'B':
             case 'b':
                 lerVotos();
-                strcpy(msg, "Continuando votacao gravada.          |\n");
+                strcpy(msg, "Continuando votacao gravada.\n");
                 do{
-                    opcaoVotar=MENU2();
+                    MENU2();
+                    scanf(" %c", &opcaoVotar);
                     switch(opcaoVotar){
                         case 'A':
                         case 'a':
@@ -513,7 +420,7 @@ int main(){
                                     if(strcmp(comissao[i].cpf,cpf)==0){
                                         eleitorEncontrado=true;
                                             if(comissao[i].votou){
-                                                strcpy(msg, "Este eleitor ja votou.                |\n");
+                                                strcpy(msg, "Este eleitor ja votou.\n");
                                                 break;
                                             }
                                             printf("Digite o codigo do TG: ");
@@ -524,13 +431,13 @@ int main(){
                                                     comissao[i].codigoTG=codigoTG;
                                                     listaTGs[j].qtdeVotos++;
                                                     comissao[i].votou=true;
-                                                    strcpy(msg, "Voto registrado com sucesso.          |\n");
+                                                    strcpy(msg, "Voto registrado com sucesso.\n");
                                                     tgEncontrado=true;
                                                     break;
                                                 }
                                             }
                                             if(!tgEncontrado){
-                                                strcpy(msg, "TG nao encontrado. Tente novamente.   |\n");
+                                                strcpy(msg, "TG nao encontrado. Tente novamente.\n");
                                             }
                                             break; 
                                     }
@@ -539,17 +446,17 @@ int main(){
                                     strcpy(msg, "Eleitor nao encontrado.\n");
                                 }
                         } else{
-                            sprintf(msg, "CPF %s invalido.        |\n", cpf);
+                            sprintf(msg, "CPF %s invalido. Tente novamente.\n", cpf);
                         }
                         break;
                         case 'B':
                         case 'b':
-                            strcpy(msg, "Votacao suspensa. Voto salvo!         |\n");
+                            strcpy(msg, "Votacao suspensa. Voto salvo!\n");
                             salvarVotos();
                             break;
                         case 'C':
                         case 'c':
-                            strcpy(msg, "Votacao concluida.                    |\n");
+                            strcpy(msg, "Votacao concluida.\n");
                             gerarResultado();
                             break;
                     }
