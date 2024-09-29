@@ -10,7 +10,7 @@
 #define maxSigla 10
 
 typedef struct Pessoa Pessoa;
-typedef struct Pessoa{
+struct Pessoa{
     char nome[maxNome];
     int idade;
 };
@@ -80,7 +80,7 @@ bool verificarCPF(const char *cpf){
         digito1=0;}
     soma=0;
     peso=11;
-    for (int i=0;i<10;i++){
+    for(int i=0;i<10;i++){
         soma+=(cpfTemp[i]-'0')*peso;
         peso--;
     } digito2=(soma*10)%11;
@@ -225,8 +225,8 @@ void lerVotos(){
             if(strcmp(comissao[j].cpf, cpf)==0){
                 comissao[j].votou=true;
                 comissao[j].codigoTG=codigoTG;
-                for (int k=0;k<qtdeTGs;k++){
-                    if (listaTGs[k].codigo==codigoTG){
+                for(int k=0;k<qtdeTGs;k++){
+                    if(listaTGs[k].codigo==codigoTG){
                         listaTGs[k].qtdeVotos++;
                         break;
                     }
